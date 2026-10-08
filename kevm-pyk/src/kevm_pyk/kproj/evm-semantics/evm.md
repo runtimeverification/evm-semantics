@@ -2331,18 +2331,6 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
           ~> #mkCall ACCTFROM ACCTTO ACCTCODE BYTES APPVALUE ARGS STATIC
          ...
          </k>
-         <callDepth> CD </callDepth>
-      requires CD =/=Int -1
-
-    rule <k> #callWithCode ACCTFROM ACCTTO ACCTCODE BYTES VALUE APPVALUE ARGS STATIC
-          => #pushCallStack ~> #pushWorldState
-          ~> #startFrameStateGas
-          ~> #accountNonexistent(ACCTTO) ~> #chargeNewAccountStateGas(VALUE, -1)
-          ~> #transferFunds ACCTFROM ACCTTO VALUE
-          ~> #mkCall ACCTFROM ACCTTO ACCTCODE BYTES APPVALUE ARGS STATIC
-         ...
-         </k>
-         <callDepth> -1 </callDepth>
 
     rule <k> #mkCall ACCTFROM ACCTTO ACCTCODE BYTES APPVALUE ARGS STATIC:Bool
           => #touchAccounts ACCTFROM ACCTTO ~> #accessAccounts ACCTFROM ACCTTO ~> #loadProgram BYTES ~> #initVM ~> #precompiled?(ACCTCODE, SCHED) ~> #execute
@@ -3648,6 +3636,7 @@ Overall Gas
          ...
          </k>
          <schedule> SCHED </schedule>
+         <newAccountCharged> _ => Ghasstategas << SCHED >> andBool VALUE =/=Int 0 </newAccountCharged>
     rule <k> true ~> #chargeNewAccountStateGas(VALUE, CD)
           => #if Ghasstategas << SCHED >> andBool VALUE =/=Int 0 #then Gnewaccount < SCHED > #else 0 #fi ~> #chargeStateGas
          ...
@@ -3659,6 +3648,7 @@ Overall Gas
          <newAccountCharged> _ => false </newAccountCharged>
       requires CD =/=Int -1
     rule <k> false ~> #chargeNewAccountStateGas(_, -1) => .K ... </k>
+         <newAccountCharged> _ => false </newAccountCharged>
 
     syntax InternalOp ::= "#chargeSelfdestructNewAccountStateGas" Int
  // -----------------------------------------------------------------

@@ -144,6 +144,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <callGas> _ => GLIMIT -Int #G0Full(SCHED, CODE, true, false, VALUE, size(AUTH)) -Int #txStateGasReservoir(SCHED, GLIMIT) </callGas>
          <stateGasReservoir> _ => #txStateGasReservoir(SCHED, GLIMIT) </stateGasReservoir>
          <stateGasSpilled> _ => 0 </stateGasSpilled>
+         <newAccountCharged> _ => false </newAccountCharged>
          <origin> _ => ACCTFROM </origin>
          <callDepth> _ => -1 </callDepth>
          <txPending> ListItem(TXID:Int) ... </txPending>
@@ -179,6 +180,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
           ~> #loadAccessList(TA)
           ~> #pushWorldState ~> #pushCallStack
           ~> #loadAuthorities(AUTH)
+          ~> #accountNonexistent(ACCTTO) ~> #chargeNewAccountStateGas(VALUE, -1)
           ~> #prepareDispatch ACCTTO
           ~> #endTxPrep
           ~> #checkCall ACCTFROM VALUE
@@ -191,6 +193,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <callGas> _ => GLIMIT -Int #G0Full(SCHED, DATA, false, ACCTFROM ==K ACCTTO, VALUE, size(AUTH)) -Int #txStateGasReservoir(SCHED, GLIMIT) </callGas>
          <stateGasReservoir> _ => #txStateGasReservoir(SCHED, GLIMIT) </stateGasReservoir>
          <stateGasSpilled> _ => 0 </stateGasSpilled>
+         <newAccountCharged> _ => false </newAccountCharged>
          <origin> _ => ACCTFROM </origin>
          <callDepth> _ => -1 </callDepth>
          <txPending> ListItem(TXID:Int) ... </txPending>
@@ -241,8 +244,8 @@ It is an `EthereumCommand` rather than an `InternalOp` because `InternalOp` is a
 
     syntax EthereumCommand ::= "#finishTx"
  // --------------------------------------
-    rule <statusCode> _:ExceptionalStatusCode </statusCode> <k> #halt ~> #finishTx => #popCallStack ~> #popWorldState ... </k>
-    rule <statusCode> EVMC_REVERT             </statusCode> <k> #halt ~> #finishTx => #popCallStack ~> #popWorldState ~> #refund (GAVAIL +Gas SGS) ... </k>
+    rule <statusCode> _:ExceptionalStatusCode </statusCode> <k> #halt ~> #finishTx => #popCallStack ~> #popWorldState ~> #creditChargedNewAccount ... </k>
+    rule <statusCode> EVMC_REVERT             </statusCode> <k> #halt ~> #finishTx => #popCallStack ~> #popWorldState ~> #creditChargedNewAccount ~> #refund (GAVAIL +Gas SGS) ... </k>
          <gas> GAVAIL </gas>
          <stateGasSpilled> SGS </stateGasSpilled>
 
