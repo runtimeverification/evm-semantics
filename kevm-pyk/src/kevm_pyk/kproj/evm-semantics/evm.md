@@ -2521,7 +2521,7 @@ System Transaction Configuration
          <statusCode> EVMC_SUCCESS </statusCode>
          <k> #halt ~> #return RETSTART RETWIDTH
           => #popCallStack ~> #dropWorldState
-          ~> #restoreStateGas SGR SGS
+          ~> #restoreStateGas SGR SGS ~> #repayStateGasSpill
           ~> 1 ~> #push ~> #refund GAVAIL ~> #setLocalMem RETSTART RETWIDTH OUT
          ...
          </k>
@@ -2545,6 +2545,22 @@ System Transaction Configuration
          <useGas> true </useGas>
     rule <k> #restoreStateGas _ _ => .K ... </k> <useGas> false </useGas>
 
+```
+
+`#repayStateGasSpill` mirrors EELS `repay_state_gas_spill` (EIP-8037): after a successful child merges, a cross-frame state-gas refund may sit in the reservoir while the regular gas that paid the matching charge is still counted as spill, so the reservoir repays `<gas>` up to the outstanding spill.
+
+```k
+    syntax InternalOp ::= "#repayStateGasSpill"
+ // -------------------------------------------
+    rule <k> #repayStateGasSpill => .K ... </k>
+         <gas> G => G +Gas minGas(R, S) </gas>
+         <stateGasReservoir> R => R -Gas minGas(R, S) </stateGasReservoir>
+         <stateGasSpilled>   S => S -Gas minGas(R, S) </stateGasSpilled>
+         <useGas> true </useGas>
+    rule <k> #repayStateGasSpill => .K ... </k> <useGas> false </useGas>
+```
+
+```k
     syntax InternalOp ::= "#startFrameStateGas"
  // -------------------------------------------
     rule <k> #startFrameStateGas => .K ... </k>
@@ -2739,7 +2755,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     rule <k> #finishCodeDeposit ACCT OUT
           => #balCaptureCode ACCT OLDCODE
           ~> #popCallStack ~> #dropWorldState
-          ~> #restoreStateGas SGR SGS
+          ~> #restoreStateGas SGR SGS ~> #repayStateGasSpill
           ~> #refund GAVAIL ~> ACCT ~> #push
          ...
          </k>
