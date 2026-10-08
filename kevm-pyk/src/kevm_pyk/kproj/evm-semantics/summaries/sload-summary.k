@@ -7,7 +7,11 @@ module SLOAD-SUMMARY
            <k>
              ( #next [ SLOAD ] ~> .K => .K )
              ~> _K_CELL:K
+             ~> .K
            </k>
+           <schedule>
+             SCHEDULE_CELL:Schedule
+           </schedule>
            <useGas>
              ( USEGAS_CELL:Bool => false )
            </useGas>
@@ -48,13 +52,16 @@ module SLOAD-SUMMARY
            </ethereum>
            ...
          </kevm>
-      requires ( notBool USEGAS_CELL:Bool )
+      requires ( ( notBool USEGAS_CELL:Bool )
+       andBool ( ( notBool Ghaseip7928 << SCHEDULE_CELL:Schedule >> )
+               ))
       [priority(20), label(SLOAD-SUMMARY-NOGAS-BERLIN)]
     
     rule [SLOAD-SUMMARY-USEGAS-BERLIN]: <kevm>
            <k>
              ( #next [ SLOAD ] ~> .K => .K )
              ~> _K_CELL:K
+             ~> .K
            </k>
            <schedule>
              SCHEDULE_CELL:Schedule
@@ -106,15 +113,17 @@ module SLOAD-SUMMARY
            ...
          </kevm>
       requires ( USEGAS_CELL:Bool
+       andBool ( ( notBool Ghaseip7928 << SCHEDULE_CELL:Schedule >> )
        andBool ( Ghasaccesslist << SCHEDULE_CELL:Schedule >>
        andBool ( #if #inStorage ( ACCESSEDSTORAGE_CELL:Map , ID_CELL:Int , W0:Int ) #then Gwarmstorageread < SCHEDULE_CELL:Schedule > #else Gcoldsload < SCHEDULE_CELL:Schedule > #fi <=Int GAS_CELL:Int
-               )))
+               ))))
       [priority(20), label(SLOAD-SUMMARY-USEGAS-BERLIN)]
     
     rule [SLOAD-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ SLOAD ] ~> .K => .K )
              ~> _K_CELL:K
+             ~> .K
            </k>
            <schedule>
              SCHEDULE_CELL:Schedule
@@ -160,9 +169,10 @@ module SLOAD-SUMMARY
            ...
          </kevm>
       requires ( USEGAS_CELL:Bool
+       andBool ( ( notBool Ghaseip7928 << SCHEDULE_CELL:Schedule >> )
        andBool ( ( notBool Ghasaccesslist << SCHEDULE_CELL:Schedule >> )
        andBool ( Gsload < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
-               )))
+               ))))
       [priority(20), label(SLOAD-SUMMARY-USEGAS)]
 
 endmodule

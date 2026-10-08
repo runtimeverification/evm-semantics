@@ -7,7 +7,11 @@ module BALANCE-NORMAL-SUMMARY
            <k>
              ( #next [ BALANCE ] ~> .K => .K )
              ~> _K_CELL:K
+             ~> .K
            </k>
+           <schedule>
+             SCHEDULE_CELL:Schedule
+           </schedule>
            <useGas>
              ( USEGAS_CELL:Bool => false )
            </useGas>
@@ -52,14 +56,16 @@ module BALANCE-NORMAL-SUMMARY
            ...
          </kevm>
       requires ( ( notBool USEGAS_CELL:Bool )
+       andBool ( ( notBool Ghaseip7928 << SCHEDULE_CELL:Schedule >> )
        andBool ( ( W0:Int modInt pow160 ) ==Int ACCTID:Int
-               ))
+               )))
       [priority(20), label(BALANCE-NORMAL-SUMMARY-NOGAS-BERLIN)]
     
     rule [BALANCE-NORMAL-SUMMARY-USEGAS-BERLIN]: <kevm>
            <k>
              ( #next [ BALANCE ] ~> .K => .K )
              ~> _K_CELL:K
+             ~> .K
            </k>
            <schedule>
              SCHEDULE_CELL:Schedule
@@ -108,17 +114,19 @@ module BALANCE-NORMAL-SUMMARY
            ...
          </kevm>
       requires ( USEGAS_CELL:Bool
+       andBool ( ( notBool Ghaseip7928 << SCHEDULE_CELL:Schedule >> )
        andBool ( Ghasaccesslist << SCHEDULE_CELL:Schedule >>
        andBool ( #if ( W0:Int modInt pow160 ) in ACCESSEDACCOUNTS_CELL:Set #then Gwarmstorageread < SCHEDULE_CELL:Schedule > #else Gcoldaccountaccess < SCHEDULE_CELL:Schedule > #fi <=Int GAS_CELL:Int
        andBool ( 0 <=Int GAS_CELL:Int
        andBool ( ( W0:Int modInt pow160 ) ==Int ACCTID:Int
-               )))))
+               ))))))
       [priority(20), label(BALANCE-NORMAL-SUMMARY-USEGAS-BERLIN)]
     
     rule [BALANCE-NORMAL-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ BALANCE ] ~> .K => .K )
              ~> _K_CELL:K
+             ~> .K
            </k>
            <schedule>
              SCHEDULE_CELL:Schedule
@@ -167,10 +175,11 @@ module BALANCE-NORMAL-SUMMARY
            ...
          </kevm>
       requires ( USEGAS_CELL:Bool
+       andBool ( ( notBool Ghaseip7928 << SCHEDULE_CELL:Schedule >> )
        andBool ( ( notBool Ghasaccesslist << SCHEDULE_CELL:Schedule >> )
        andBool ( Gbalance < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
        andBool ( ( W0:Int modInt pow160 ) ==Int ACCTID:Int
-               ))))
+               )))))
       [priority(20), label(BALANCE-NORMAL-SUMMARY-USEGAS)]
 
 endmodule

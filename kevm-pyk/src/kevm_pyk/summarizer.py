@@ -245,6 +245,15 @@ NOT_USEGAS_OPCODES: Final = frozenset(
     ]
 )
 
+# Opcodes summarised only on schedules where the given flag is off; see `build_spec`.
+UNSUMMARIZED_SCHEDULE_FLAG: Final = frozendict(
+    {
+        'SSTORE': 'Ghasstategas',
+        'BALANCE': 'Ghaseip7928',
+        'SLOAD': 'Ghaseip7928',
+    }
+)
+
 ACCOUNT_QUERIES_OPCODES: Final = frozenset(
     [
         'BALANCE',
@@ -695,17 +704,22 @@ class KEVMSummarizer:
         if op in ['SSTORE', 'TSTORE']:
             init_subst['STATIC_CELL'] = KToken('false', KSort('Bool'))
 
-        if op == 'SSTORE':
-            # Under EIP-8037 (`Ghasstategas`) SSTORE charges and credits state gas through
-            # `[concrete]` functions and branches on the reservoir, so its basic block does not
-            # collapse to a single summary rule. Summarise only schedules without state gas; the
-            # constraint is emitted as the rules' guard, so Amsterdam falls through to the semantics.
+        if op in UNSUMMARIZED_SCHEDULE_FLAG:
+            # Some opcodes do not collapse to a single summary rule once a schedule feature is on:
+            # under EIP-8037 (`Ghasstategas`) SSTORE charges and credits state gas through
+            # `[concrete]` functions and branches on the reservoir, and under EIP-7928
+            # (`Ghaseip7928`) BALANCE and SLOAD journal into the block-level access list, which
+            # splits the summary per schedule. Summarise only schedules without the feature; the
+            # constraint is emitted as the rules' guard, so those schedules fall through to the semantics.
             init_constraints.append(
                 mlEqualsTrue(
                     notBool(
                         KApply(
                             '_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule',
-                            [KApply('Ghasstategas_SCHEDULE_ScheduleFlag'), KVariable('SCHEDULE_CELL', 'Schedule')],
+                            [
+                                KApply(f'{UNSUMMARIZED_SCHEDULE_FLAG[op]}_SCHEDULE_ScheduleFlag'),
+                                KVariable('SCHEDULE_CELL', 'Schedule'),
+                            ],
                         )
                     )
                 )
