@@ -2355,13 +2355,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     syntax Bool ::= #isPrecompiledAccount ( Int , Schedule ) [symbol(isPrecompiledAccount), function, total, smtlib(isPrecompiledAccount)]
  // --------------------------------------------------------------------------------------------------------------------------------------
-    rule [isPrecompiledAccountOsaka]:     #isPrecompiledAccount(256,      OSAKA)     => true
-    rule [isPrecompiledAccountBPO1]:      #isPrecompiledAccount(256,      BPO1)      => true
-    rule [isPrecompiledAccountBPO2]:      #isPrecompiledAccount(256,      BPO2)      => true
-    rule [isPrecompiledAccountBPO3]:      #isPrecompiledAccount(256,      BPO3)      => true
-    rule [isPrecompiledAccountBPO4]:      #isPrecompiledAccount(256,      BPO4)      => true
-    rule [isPrecompiledAccountAmsterdam]: #isPrecompiledAccount(256,      AMSTERDAM) => true
-    rule [isPrecompiledAccount]:          #isPrecompiledAccount(ACCTCODE, SCHED)     => 0 <Int ACCTCODE andBool ACCTCODE <=Int #precompiledAccountsUB(SCHED) [owise]
+    rule [isPrecompiledAccount]: #isPrecompiledAccount(ACCTCODE, SCHED) => (0 <Int ACCTCODE andBool ACCTCODE <=Int #precompiledAccountsUB(SCHED)) orBool (Ghasp256verify << SCHED >> andBool ACCTCODE ==Int 256)
 
     syntax KItem ::= "#initVM"
  // --------------------------
@@ -3001,13 +2995,7 @@ Precompiled Contracts
     syntax Set ::= #precompiledAccountsSet    ( Schedule ) [symbol(#precompiledAccountsSet),    function, total]
     syntax Set ::= #precompiledAccountsSetAux ( Int      ) [symbol(#precompiledAccountsSetAux), function, total]
  // ------------------------------------------------------------------------------------------------------------
-    rule #precompiledAccountsSet(OSAKA)     => #precompiledAccountsSetAux(#precompiledAccountsUB(OSAKA))     SetItem(256)
-    rule #precompiledAccountsSet(BPO1)      => #precompiledAccountsSetAux(#precompiledAccountsUB(BPO1))      SetItem(256)
-    rule #precompiledAccountsSet(BPO2)      => #precompiledAccountsSetAux(#precompiledAccountsUB(BPO2))      SetItem(256)
-    rule #precompiledAccountsSet(BPO3)      => #precompiledAccountsSetAux(#precompiledAccountsUB(BPO3))      SetItem(256)
-    rule #precompiledAccountsSet(BPO4)      => #precompiledAccountsSetAux(#precompiledAccountsUB(BPO4))      SetItem(256)
-    rule #precompiledAccountsSet(AMSTERDAM) => #precompiledAccountsSetAux(#precompiledAccountsUB(AMSTERDAM)) SetItem(256)
-    rule #precompiledAccountsSet(SCHED)     => #precompiledAccountsSetAux(#precompiledAccountsUB(SCHED)) [owise]
+    rule #precompiledAccountsSet(SCHED) => #precompiledAccountsSetAux(#precompiledAccountsUB(SCHED)) |Set (#if Ghasp256verify << SCHED >> #then SetItem(256) #else .Set #fi)
 
     rule #precompiledAccountsSetAux(N)  => .Set requires N <=Int 0
     rule #precompiledAccountsSetAux(N)  => SetItem(N) #precompiledAccountsSetAux(N -Int 1) [owise, preserves-definedness]
@@ -3508,7 +3496,12 @@ Precompiled Contracts
  // -------------------------------------
     rule <k> P256VERIFY => #end EVMC_SUCCESS ... </k>
          <callData> DATA </callData>
-         <output> _ => P256Verify(DATA) </output>
+         <output> _ => #p256verify(DATA) </output>
+
+    // The Haskell backend has no KRYPTO.p256verify hook, so the hook is only applied to concrete input.
+    syntax Bytes ::= #p256verify ( Bytes ) [symbol(#p256verify), function]
+ // ----------------------------------------------------------------------
+    rule #p256verify(DATA) => P256Verify(DATA) [concrete]
 ```
 
 Ethereum Gas Calculation

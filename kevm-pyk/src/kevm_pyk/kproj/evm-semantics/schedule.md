@@ -34,7 +34,7 @@ module SCHEDULE
                           | "Ghasfloorcost"           | "Ghasclz"          | "Ghasstategas"        | "Ghasauthbaserefund"
                           | "Ghaseip8038"             | "Ghasreserve"      | "Ghastxgaslimit"      | "Ghasslotnum"
                           | "Ghaseip7823"             | "Ghaseip7708"      | "Ghaseip8024"        | "Ghaseip7928"
-                          | "Ghasintrinsicdecomp"     | "Ghasnoselfdestructburn"  | "Ghasbuilderrequests"
+                          | "Ghasintrinsicdecomp"     | "Ghasnoselfdestructburn"  | "Ghasbuilderrequests"   | "Ghasp256verify"
  // -----------------------------------------------------------------------------------------------------------------
 ```
 
@@ -209,6 +209,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [Ghaseip8038Default]:             Ghaseip8038             << DEFAULT >> => false
     rule [GhasreserveDefault]:             Ghasreserve             << DEFAULT >> => false
     rule [Ghaseip7823Default]:             Ghaseip7823             << DEFAULT >> => false
+    rule [Ghasp256verifyDefault]:          Ghasp256verify          << DEFAULT >> => false
     rule [GhastxgaslimitDefault]:          Ghastxgaslimit          << DEFAULT >> => false
     rule [GhasslotnumDefault]:             Ghasslotnum             << DEFAULT >> => false
     rule [Ghaseip7708Default]:             Ghaseip7708             << DEFAULT >> => false
@@ -567,11 +568,13 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GhasreserveOsaka]:    Ghasreserve    << OSAKA >> => true
     rule [GhastxgaslimitOsaka]: Ghastxgaslimit << OSAKA >> => true
     rule [Ghaseip7823Osaka]:    Ghaseip7823    << OSAKA >> => true
+    rule [Ghasp256verifyOsaka]: Ghasp256verify << OSAKA >> => true
     rule [SCHEDFLAGOsaka]:      SCHEDFLAG      << OSAKA >> => SCHEDFLAG << PRAGUE >>
       requires notBool ( SCHEDFLAG ==K Ghasclz
                   orBool SCHEDFLAG ==K Ghasreserve
                   orBool SCHEDFLAG ==K Ghastxgaslimit
                   orBool SCHEDFLAG ==K Ghaseip7823
+                  orBool SCHEDFLAG ==K Ghasp256verify
                        )
 ```
 
