@@ -34,7 +34,7 @@ module SCHEDULE
                           | "Ghasfloorcost"           | "Ghasclz"          | "Ghasstategas"        | "Ghasauthbaserefund"
                           | "Ghaseip8038"             | "Ghasreserve"      | "Ghastxgaslimit"      | "Ghasslotnum"
                           | "Ghaseip7823"             | "Ghaseip7708"      | "Ghaseip8024"        | "Ghaseip7928"
-                          | "Ghasintrinsicdecomp"     | "Ghasnoselfdestructburn"
+                          | "Ghasintrinsicdecomp"     | "Ghasnoselfdestructburn"  | "Ghasbuilderrequests"
  // -----------------------------------------------------------------------------------------------------------------
 ```
 
@@ -216,6 +216,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [Ghaseip7928Default]:             Ghaseip7928             << DEFAULT >> => false
     rule [GhasintrinsicdecompDefault]:     Ghasintrinsicdecomp     << DEFAULT >> => false
     rule [GhasnoselfdestructburnDefault]:  Ghasnoselfdestructburn  << DEFAULT >> => false
+    rule [GhasbuilderrequestsDefault]:     Ghasbuilderrequests     << DEFAULT >> => false
 ```
 
 ### Frontier Schedule
@@ -692,6 +693,7 @@ The values are the `update_blob_constants` of the EEST fork classes at the fixtu
     rule [Ghaseip7928Amsterdam]:        Ghaseip7928        << AMSTERDAM >> => true
     rule [GhasintrinsicdecompAmsterdam]: Ghasintrinsicdecomp << AMSTERDAM >> => true
     rule [GhasnoselfdestructburnAmsterdam]: Ghasnoselfdestructburn << AMSTERDAM >> => true
+    rule [GhasbuilderrequestsAmsterdam]: Ghasbuilderrequests << AMSTERDAM >> => true
     rule [SCHEDFLAGAmsterdam]:          SCHEDFLAG          << AMSTERDAM >> => SCHEDFLAG << OSAKA >>
       requires notBool ( SCHEDFLAG ==K Ghaseip8038
                   orBool SCHEDFLAG ==K Ghasauthbaserefund
@@ -702,6 +704,7 @@ The values are the `update_blob_constants` of the EEST fork classes at the fixtu
                   orBool SCHEDFLAG ==K Ghaseip7928
                   orBool SCHEDFLAG ==K Ghasintrinsicdecomp
                   orBool SCHEDFLAG ==K Ghasnoselfdestructburn
+                  orBool SCHEDFLAG ==K Ghasbuilderrequests
                        )
 ```
 

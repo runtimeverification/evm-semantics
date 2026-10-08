@@ -20,6 +20,8 @@ Address constants:
 - `DEPOSIT_CONTRACT_ADDRESS (0x00000000219ab540356cbb839cbe05303d7705fa)` : Predeployed contract for deposits.
 - `WITHDRAWAL_REQUEST_PREDEPLOY_ADDRESS (0x00000961Ef480Eb55e80D19ad83579A64c007002)`: Predeployed contract for validator withdrawal requests (EIP-7002)
 - `CONSOLIDATION_REQUEST_PREDEPLOY_ADDRESS (0x0000BBdDc7CE488642fb579f8B00f3a590007251)`: Predeployed contract for stake consolidation requests (EIP-7251)
+- `BUILDER_DEPOSIT_CONTRACT_ADDRESS (0x0000bFF46984e3725691FA540a8C7589300D8282)`: Predeployed contract for builder deposit requests (EIP-8282)
+- `BUILDER_EXIT_CONTRACT_ADDRESS (0x000064D678505ad48F8cCb093BC65613800E8282)`: Predeployed contract for builder exit requests (EIP-8282)
 
 ```k
     syntax Int ::= #computeRequestsHash(List) [function, symbol(#computeRequestsHash)]
@@ -39,18 +41,26 @@ Address constants:
     syntax Int ::= "DEPOSIT_EVENT_SIGNATURE_HASH"            [alias]
                  | "WITHDRAWAL_REQUEST_PREDEPLOY_ADDRESS"    [alias]
                  | "CONSOLIDATION_REQUEST_PREDEPLOY_ADDRESS" [alias]
+                 | "BUILDER_DEPOSIT_CONTRACT_ADDRESS"        [alias]
+                 | "BUILDER_EXIT_CONTRACT_ADDRESS"           [alias]
  // ----------------------------------------------------------------
     rule DEPOSIT_CONTRACT_ADDRESS                => 44667813780391404145283579356374304250
     rule WITHDRAWAL_REQUEST_PREDEPLOY_ADDRESS    => 817336022611862939366240017674853872070658
     rule CONSOLIDATION_REQUEST_PREDEPLOY_ADDRESS => 16365465459783978374881923886502306505585233
+    rule BUILDER_DEPOSIT_CONTRACT_ADDRESS        => 16721615769430824620096915782814037621703298
+    rule BUILDER_EXIT_CONTRACT_ADDRESS           => 8784208944282606029881015155592537368855170
 
     syntax Bytes ::= "DEPOSIT_REQUEST_TYPE"       [macro]
                    | "WITHDRAWAL_REQUEST_TYPE"    [macro]
                    | "CONSOLIDATION_REQUEST_TYPE" [macro]
+                   | "BUILDER_DEPOSIT_REQUEST_TYPE" [macro]
+                   | "BUILDER_EXIT_REQUEST_TYPE"    [macro]
  // -----------------------------------------------------
     rule DEPOSIT_REQUEST_TYPE => b"\x00"
     rule WITHDRAWAL_REQUEST_TYPE => b"\x01"
     rule CONSOLIDATION_REQUEST_TYPE => b"\x02"
+    rule BUILDER_DEPOSIT_REQUEST_TYPE => b"\x03"
+    rule BUILDER_EXIT_REQUEST_TYPE => b"\x04"
 ```
 
 Deposit Requests

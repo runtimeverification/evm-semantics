@@ -228,6 +228,8 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <depositRequests> .Bytes </depositRequests>
               <withdrawalRequests> .Bytes </withdrawalRequests>
               <consolidationRequests> .Bytes </consolidationRequests>
+              <builderDepositRequests> .Bytes </builderDepositRequests>
+              <builderExitRequests> .Bytes </builderExitRequests>
             </requests>
 
           </network>
@@ -1202,6 +1204,8 @@ Rules for parsing Deposit Requests according to EIP-6110.
 Retrieving requests from the output of a system call.
 `#getRequests WITHDRAWAL_REQUEST_PREDEPLOY_ADDRESS` fetches the output of a system call and stores the output in the `<withdrawalRequests>` cell.
 `#getRequests CONSOLIDATION_REQUEST_PREDEPLOY_ADDRESS` fetches the output of a system call and stores the output in the `<consolidationRequests>` cell.
+`#getRequests BUILDER_DEPOSIT_CONTRACT_ADDRESS` fetches the output of a system call and stores the output in the `<builderDepositRequests>` cell.
+`#getRequests BUILDER_EXIT_CONTRACT_ADDRESS` fetches the output of a system call and stores the output in the `<builderExitRequests>` cell.
 
 ```k
     syntax KItem ::= "#getRequests" Int [symbol(#getRequests)]
@@ -1216,6 +1220,16 @@ Retrieving requests from the output of a system call.
          <output> CRQSTS </output>
          <consolidationRequests> _ => CRQSTS </consolidationRequests>
 
+    rule <k> #halt ~> #getRequests BUILDER_DEPOSIT_CONTRACT_ADDRESS => #popCallStack ~> #dropWorldState ~> #finalizeStorage(ListItem(BUILDER_DEPOSIT_CONTRACT_ADDRESS)) ... </k>
+         <statusCode> EVMC_SUCCESS </statusCode>
+         <output> BDRQSTS </output>
+         <builderDepositRequests> _ => BDRQSTS </builderDepositRequests>
+
+    rule <k> #halt ~> #getRequests BUILDER_EXIT_CONTRACT_ADDRESS => #popCallStack ~> #dropWorldState ~> #finalizeStorage(ListItem(BUILDER_EXIT_CONTRACT_ADDRESS)) ... </k>
+         <statusCode> EVMC_SUCCESS </statusCode>
+         <output> BERQSTS </output>
+         <builderExitRequests> _ => BERQSTS </builderExitRequests>
+
     rule <k> #halt ~> #getRequests _ => #popCallStack ~> #popWorldState ~> #abortSystemRequests ... </k>
          <statusCode> SC => EVMC_INVALID_BLOCK </statusCode>
       requires notBool SC ==K EVMC_SUCCESS
@@ -1224,15 +1238,22 @@ Retrieving requests from the output of a system call.
  // ---------------------------------------------------------------------
     rule <k> #abortSystemRequests ~> #systemCall _ _        => #abortSystemRequests ... </k>
     rule <k> #abortSystemRequests ~> #getRequests _         => #abortSystemRequests ... </k>
+    rule <k> #abortSystemRequests ~> #processBuilderRequests => #abortSystemRequests ... </k>
     rule <k> #abortSystemRequests ~> #validateRequestsRoot   => .K ... </k>
 
     syntax KItem ::= "#checkRequestsRoot" Int [symbol(#checkRequestsRoot)]
                    | "#validateRequestsRoot" [symbol(#validateRequestsRoot)]
  // ------------------------------------------------------------------------
-    rule <k> #validateRequestsRoot => #checkRequestsRoot #computeRequestsHash(ListItem(DEPOSIT_REQUEST_TYPE +Bytes DRQSTS) ListItem(WITHDRAWAL_REQUEST_TYPE +Bytes WRQSTS) ListItem(CONSOLIDATION_REQUEST_TYPE +Bytes CRQSTS)) ... </k>
+    rule <k> #validateRequestsRoot
+          => #checkRequestsRoot #computeRequestsHash(ListItem(DEPOSIT_REQUEST_TYPE +Bytes DRQSTS) ListItem(WITHDRAWAL_REQUEST_TYPE +Bytes WRQSTS) ListItem(CONSOLIDATION_REQUEST_TYPE +Bytes CRQSTS)
+                                                      ListItem(BUILDER_DEPOSIT_REQUEST_TYPE +Bytes BDRQSTS) ListItem(BUILDER_EXIT_REQUEST_TYPE +Bytes BERQSTS))
+         ...
+         </k>
          <depositRequests> DRQSTS </depositRequests>
          <withdrawalRequests> WRQSTS </withdrawalRequests>
          <consolidationRequests> CRQSTS </consolidationRequests>
+         <builderDepositRequests> BDRQSTS </builderDepositRequests>
+         <builderExitRequests> BERQSTS </builderExitRequests>
 
     rule <k> #checkRequestsRoot REQUESTS_ROOT => .K ... </k> <requestsRoot> HEADER_REQUESTS_ROOT </requestsRoot> requires REQUESTS_ROOT ==K HEADER_REQUESTS_ROOT
     rule <k> #checkRequestsRoot REQUESTS_ROOT => .K ... </k> <requestsRoot> HEADER_REQUESTS_ROOT </requestsRoot>
@@ -1240,11 +1261,13 @@ Retrieving requests from the output of a system call.
       requires notBool REQUESTS_ROOT ==K HEADER_REQUESTS_ROOT
 
     syntax KItem ::= "#processGeneralPurposeRequests" [symbol(#processGeneralPurposeRequests)]
+                   | "#processBuilderRequests" [symbol(#processBuilderRequests)]
  // ------------------------------------------------------------------------------------------
     rule <k> #processGeneralPurposeRequests
           => #filterLogs 0
           ~> #systemCall WITHDRAWAL_REQUEST_PREDEPLOY_ADDRESS .Bytes ~> #getRequests WITHDRAWAL_REQUEST_PREDEPLOY_ADDRESS
           ~> #systemCall CONSOLIDATION_REQUEST_PREDEPLOY_ADDRESS .Bytes ~> #getRequests CONSOLIDATION_REQUEST_PREDEPLOY_ADDRESS
+          ~> #processBuilderRequests
           ~> #validateRequestsRoot
           ~> #restoreTxStatus SC
           ...
@@ -1260,6 +1283,18 @@ Retrieving requests from the output of a system call.
          <statusCode> EVMC_INVALID_BLOCK </statusCode>
     rule <k> #restoreTxStatus SC => .K ... </k>
          <statusCode> _ => SC </statusCode> [owise]
+
+    rule <k> #processBuilderRequests
+          => #systemCall BUILDER_DEPOSIT_CONTRACT_ADDRESS .Bytes ~> #getRequests BUILDER_DEPOSIT_CONTRACT_ADDRESS
+          ~> #systemCall BUILDER_EXIT_CONTRACT_ADDRESS .Bytes ~> #getRequests BUILDER_EXIT_CONTRACT_ADDRESS
+         ...
+         </k>
+         <schedule> SCHED </schedule>
+      requires Ghasbuilderrequests << SCHED >>
+
+    rule <k> #processBuilderRequests => .K ... </k>
+         <schedule> SCHED </schedule>
+      requires notBool Ghasbuilderrequests << SCHED >>
 
     rule <k> #processGeneralPurposeRequests => .K ... </k> [owise]
 ```
