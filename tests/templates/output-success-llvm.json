@@ -228,6 +228,9 @@
           <headerBlobGasUsed>
             0
           </headerBlobGasUsed>
+          <headerGasUsed>
+            0
+          </headerGasUsed>
           <excessBlobGas>
             0
           </excessBlobGas>

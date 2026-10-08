@@ -142,6 +142,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <withdrawalsRoot>  0      </withdrawalsRoot>
               <blobGasUsed>      0      </blobGasUsed>
               <headerBlobGasUsed> 0     </headerBlobGasUsed>
+              <headerGasUsed>     0     </headerGasUsed>
               <excessBlobGas>    0      </excessBlobGas>
               <beaconRoot>       0      </beaconRoot>
               <requestsRoot>     0      </requestsRoot>
@@ -1374,6 +1375,7 @@ Terminates validation successfully when all conditions are met or when blob vali
          <schedule> SCHED </schedule>
          <blobGasUsed> BLOB_GAS_USED </blobGasUsed>
          <headerBlobGasUsed> HEADER_BLOB_GAS_USED </headerBlobGasUsed>
+         <headerGasUsed> HEADER_GAS_USED </headerGasUsed>
          <excessBlobGas> EXCESS_BLOB_GAS </excessBlobGas>
          <baseFee> BASE_FEE </baseFee>
          <gasLimit> GAS_LIMIT </gasLimit>
@@ -1383,8 +1385,9 @@ Terminates validation successfully when all conditions are met or when blob vali
          <previousBaseFee> _ => BASE_FEE </previousBaseFee>
          <previousGasLimit> _ => GAS_LIMIT </previousGasLimit>
          <previousGasUsed> _ => gas2Int(GAS_USED) </previousGasUsed>
-      requires ( Ghasblobbasefee << SCHED >> andBool BLOB_GAS_USED <=Int Gmaxblobgas < SCHED > andBool BLOB_GAS_USED ==Int HEADER_BLOB_GAS_USED )
-        orBool notBool Ghasblobbasefee << SCHED >>
+      requires gas2Int(GAS_USED) ==Int HEADER_GAS_USED
+       andBool ( ( Ghasblobbasefee << SCHED >> andBool BLOB_GAS_USED <=Int Gmaxblobgas < SCHED > andBool BLOB_GAS_USED ==Int HEADER_BLOB_GAS_USED )
+            orBool notBool Ghasblobbasefee << SCHED >> )
 
     rule <k> #finalizeBlockBlobs => .K ... </k>
          <statusCode> _ => EVMC_INVALID_BLOCK </statusCode> [owise]
@@ -1409,7 +1412,8 @@ Terminates validation successfully when all conditions are met or when blob vali
          <number> BN </number>
          <previousHash> HP </previousHash>
          <blockhashes> HASHES => #if BN >Int 1 #then ListItem(HP) HASHES #else HASHES #fi </blockhashes>
-         <gasUsed> _ => 0 </gasUsed>
+         <gasUsed> HDRGU => 0 </gasUsed>
+         <headerGasUsed> _ => gas2Int(HDRGU) </headerGasUsed>
          <blobGasUsed> HDRUB => 0 </blobGasUsed>
          <headerBlobGasUsed> _ => HDRUB </headerBlobGasUsed>
          <gasUsedRegular> _ => 0 </gasUsedRegular>
