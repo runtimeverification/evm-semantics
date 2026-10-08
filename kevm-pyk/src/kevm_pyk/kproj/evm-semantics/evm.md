@@ -2600,6 +2600,18 @@ The control items are `KItem`s rather than `InternalOp`s so the generic `#halt` 
     rule <k> #creditChargedNewAccount => .K ... </k>
          <newAccountCharged> false </newAccountCharged>
 
+    // Exceptional halt of the top frame: EELS restore_state_gas refills the spill into
+    // gas_left and forfeit_remaining_gas then burns it, so only the state accounting is undone.
+    syntax InternalOp ::= "#refillChargedNewAccount"
+ // ------------------------------------------------
+    rule <k> #refillChargedNewAccount => .K ... </k>
+         <schedule> SCHED </schedule>
+         <newAccountCharged> true => false </newAccountCharged>
+         <stateGasSpilled>   S => S -Gas minGas(Gnewaccount < SCHED >, S) </stateGasSpilled>
+         <stateGasReservoir> R => R +Gas (Gnewaccount < SCHED > -Gas minGas(Gnewaccount < SCHED >, S)) </stateGasReservoir>
+    rule <k> #refillChargedNewAccount => .K ... </k>
+         <newAccountCharged> false </newAccountCharged>
+
 
     rule <k> #setLocalMem START WIDTH WS => .K ... </k>
          <localMem> LM => LM [ START := #range(WS, 0, minInt(WIDTH, lengthBytes(WS))) ] </localMem>

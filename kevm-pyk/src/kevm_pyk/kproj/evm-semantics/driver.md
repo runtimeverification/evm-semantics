@@ -244,7 +244,7 @@ It is an `EthereumCommand` rather than an `InternalOp` because `InternalOp` is a
 
     syntax EthereumCommand ::= "#finishTx"
  // --------------------------------------
-    rule <statusCode> _:ExceptionalStatusCode </statusCode> <k> #halt ~> #finishTx => #popCallStack ~> #popWorldState ~> #creditChargedNewAccount ... </k>
+    rule <statusCode> _:ExceptionalStatusCode </statusCode> <k> #halt ~> #finishTx => #popCallStack ~> #popWorldState ~> #refillChargedNewAccount ... </k>
     rule <statusCode> EVMC_REVERT             </statusCode> <k> #halt ~> #finishTx => #popCallStack ~> #popWorldState ~> #creditChargedNewAccount ~> #refund (GAVAIL +Gas SGS) ... </k>
          <gas> GAVAIL </gas>
          <stateGasSpilled> SGS </stateGasSpilled>
