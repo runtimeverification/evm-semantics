@@ -1469,7 +1469,7 @@ Terminates validation successfully when all conditions are met or when blob vali
 ```
 
 If `block.timestamp >= CANCUN_FORK_TIMESTAMP`:
-Before executing any transaction, the `BEACON_ROOTS_ADDRESS` (`0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02`) storage is modified as following:
+Before executing any transaction, the `BEACON_ROOTS_ADDRESS` (`0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02`) contract is called as an unchecked system call with the parent beacon root as calldata; the deployed contract updates its storage as follows:
  - Set the storage value at `header.timestamp % HISTORY_BUFFER_LENGTH` to be `header.timestamp`
  - Set the storage value at `header.timestamp % HISTORY_BUFFER_LENGTH + HISTORY_BUFFER_LENGTH` to be `header.parent_beacon_root_hash`
 where `HISTORY_BUFFER_LENGTH == 8191`.
@@ -1479,27 +1479,16 @@ Read more about EIP-4788 here [https://eips.ethereum.org/EIPS/eip-4788](https://
 ```k
     syntax InternalOp ::= "#executeBeaconRoots" [symbol(#executeBeaconRoots)]
  // -------------------------------------------------------------------------
-    rule <k> #executeBeaconRoots
-          => #balTouch BEACON_ROOTS_ADDRESS
-          ~> #balCaptureStorage BEACON_ROOTS_ADDRESS (TS modInt 8191) #lookup(M, TS modInt 8191) ~> #balRead BEACON_ROOTS_ADDRESS (TS modInt 8191)
-          ~> #balCaptureStorage BEACON_ROOTS_ADDRESS (TS modInt 8191 +Int 8191) #lookup(M, TS modInt 8191 +Int 8191) ~> #balRead BEACON_ROOTS_ADDRESS (TS modInt 8191 +Int 8191)
-         ...
-         </k>
+    rule <k> #executeBeaconRoots => #uncheckedSystemCall BEACON_ROOTS_ADDRESS #padToWidth(32, #asByteStack(BR)) ... </k>
          <schedule> SCHED </schedule>
-         <timestamp> TS </timestamp>
          <beaconRoot> BR </beaconRoot>
-         <account>
-           <acctID> BEACON_ROOTS_ADDRESS </acctID>
-           <storage> M:Map => M [(TS modInt 8191) <- TS] [(TS modInt 8191 +Int 8191) <- BR] </storage>
-           ...
-         </account>
       requires Ghasbeaconroot << SCHED >>
 
     rule <k> #executeBeaconRoots => .K ... </k> [owise]
 ```
 
 If `block.timestamp >= PRAGUE_FORK_TIMESTAMP`:
-Before executing any transaction, the `HISTORY_STORAGE_ADDRESS` (`0x0000F90827F1C53a10cb7A02335B175320002935`) storage is modified as following:
+Before executing any transaction, the `HISTORY_STORAGE_ADDRESS` (`0x0000F90827F1C53a10cb7A02335B175320002935`) contract is called as an unchecked system call with the parent hash as calldata; the deployed contract updates its storage as follows:
  - Set the storage value at `(block.number-1) % HISTORY_SERVE_WINDOW` to be ` block.parent.hash`
 where `HISTORY_SERVE_WINDOW == 8191`.
 
@@ -1508,22 +1497,10 @@ Read more about EIP-2935 here [https://eips.ethereum.org/EIPS/eip-2935](https://
 ```k
     syntax InternalOp ::= "#executeBlockHashHistory" [symbol(#executeBlockHashHistory)]
  // -----------------------------------------------------------------------------------
-    rule <k> #executeBlockHashHistory
-          => #balTouch HISTORY_STORAGE_ADDRESS
-          ~> #balCaptureStorage HISTORY_STORAGE_ADDRESS ((BN -Int 1) modInt 8191) #lookup(M, (BN -Int 1) modInt 8191) ~> #balRead HISTORY_STORAGE_ADDRESS ((BN -Int 1) modInt 8191)
-         ...
-         </k>
+    rule <k> #executeBlockHashHistory => #uncheckedSystemCall HISTORY_STORAGE_ADDRESS #padToWidth(32, #asByteStack(HP)) ... </k>
          <schedule> SCHED </schedule>
          <previousHash> HP </previousHash>
-         <number> BN </number>
-         <account>
-           <acctID> HISTORY_STORAGE_ADDRESS </acctID>
-           <code> CODE </code>
-           <storage> M:Map => M [((BN -Int 1) modInt 8191) <- HP] </storage>
-           ...
-         </account>
       requires Ghashistory << SCHED >>
-       andBool lengthBytes(CODE) >Int 0
 
     rule <k> #executeBlockHashHistory => .K ... </k> [owise]
 ```
@@ -2488,6 +2465,27 @@ System Transaction Configuration
            <code>   CODE   </code>
            ...
          </account>
+```
+
+`#uncheckedSystemCall` runs a pre-block system call the way EELS `process_unchecked_system_transaction` does: the target's deployed code executes, a failure only rolls back the call's own state changes, and the block's status code is left as it was.
+A target without code is a no-op.
+The control items are `KItem`s rather than `InternalOp`s so the generic `#halt` drain cannot consume them.
+
+```k
+    syntax KItem ::= "#uncheckedSystemCall" Int Bytes [symbol(#uncheckedSystemCall)]
+                   | "#finishUncheckedSystemCall" Int StatusCode [symbol(#finishUncheckedSystemCall)]
+ // ------------------------------------------------------------------------------------------------
+    rule <k> #uncheckedSystemCall ACCTTO ARGS => #systemCall ACCTTO ARGS ~> #finishUncheckedSystemCall ACCTTO SC ... </k>
+         <statusCode> SC </statusCode>
+      requires lengthBytes(#getAccountCode(ACCTTO)) >Int 0
+
+    rule <k> #uncheckedSystemCall _ _ => .K ... </k> [owise]
+
+    rule <k> #halt ~> #finishUncheckedSystemCall ACCTTO SC => #popCallStack ~> #dropWorldState ~> #finalizeStorage(ListItem(ACCTTO)) ... </k>
+         <statusCode> EVMC_SUCCESS => SC </statusCode>
+
+    rule <k> #halt ~> #finishUncheckedSystemCall _ SC => #popCallStack ~> #popWorldState ... </k>
+         <statusCode> _ => SC </statusCode> [owise]
 ```
 
 ```k
