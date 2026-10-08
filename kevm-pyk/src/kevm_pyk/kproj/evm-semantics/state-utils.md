@@ -663,6 +663,7 @@ The `"rlp"` key loads the block information.
       andBool (ACCTCODE ==K .Bytes orBool #isValidDelegation(ACCTCODE))
       andBool notBool ACCTTO ==K .Account
       andBool ACCTNONCE ==Int TX_NONCE
+      andBool TX_NONCE <Int maxUInt64
       andBool BASE_FEE <=Int TX_MAX_FEE
       andBool TX_MAX_PRIORITY_FEE <=Int TX_MAX_FEE
       andBool BAL >=Int TX_GAS_LIMIT *Int TX_MAX_FEE +Int VALUE
@@ -705,6 +706,7 @@ The `"rlp"` key loads the block information.
       andBool (ACCTCODE ==K .Bytes orBool (Ghasauthority << SCHED >> andBool #isValidDelegation(ACCTCODE)))
       andBool notBool ACCTTO ==K .Account
       andBool ACCTNONCE ==Int TX_NONCE
+      andBool TX_NONCE <Int maxUInt64
       andBool BASE_FEE <=Int TX_MAX_FEE
       andBool TX_MAX_PRIORITY_FEE <=Int TX_MAX_FEE
       andBool size(TVH) >Int 0 andBool #checkTxVersionedHashes(TVH)
@@ -745,6 +747,7 @@ The `"rlp"` key loads the block information.
       andBool TX_CHAIN_ID ==Int NET_CHAIN_ID
       andBool (ACCTCODE ==K .Bytes orBool (Ghasauthority << SCHED >> andBool #isValidDelegation(ACCTCODE)))
       andBool ACCTNONCE ==Int TX_NONCE
+      andBool TX_NONCE <Int maxUInt64
       andBool BASE_FEE <=Int TX_MAX_FEE
       andBool TX_MAX_PRIORITY_FEE <=Int TX_MAX_FEE
       andBool BAL >=Int TX_GAS_LIMIT *Int TX_MAX_FEE +Int VALUE
@@ -785,6 +788,7 @@ The `"rlp"` key loads the block information.
          orBool TX_SIG_V ==Int (2 *Int NET_CHAIN_ID +Int 35) orBool TX_SIG_V ==Int (2 *Int NET_CHAIN_ID +Int 36) )
       andBool (ACCTCODE ==K .Bytes orBool (Ghasauthority << SCHED >> andBool #isValidDelegation(ACCTCODE)))
       andBool ACCTNONCE ==Int TX_NONCE
+      andBool TX_NONCE <Int maxUInt64
       andBool BASE_FEE <=Int TX_GAS_PRICE
       andBool BAL >=Int TX_GAS_LIMIT *Int TX_GAS_PRICE +Int VALUE
       andBool TX_GAS_LIMIT <=Int BLOCK_GAS_LIMIT
