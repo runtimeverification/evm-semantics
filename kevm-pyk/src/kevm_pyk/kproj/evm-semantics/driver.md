@@ -387,6 +387,9 @@ Processing SetCode Transaction Authority Entries
          orBool (notBool #asWord(CID) in (SetItem(ENV_CID) SetItem(0)))
          orBool (#asWord(NONCE) >=Int maxUInt64)
 
+    // The authority enters the BAL before #addAuthority's code/nonce checks, even when they reject
+    // the tuple: EELS validate_authorization reads the authority account (a tracked access) right
+    // after recovering it, before those checks. EIP-7928's prose ("after a successful set") is looser.
     rule <k> #setDelegation(AUTHORITY, CID, NONCE, ADDR, REST, W, NB, T)
           => #balTouch AUTHORITY ~> #touchAccounts AUTHORITY ~> #accessAccounts AUTHORITY
            ~> #addAuthority(AUTHORITY, CID, NONCE, ADDR, REST, W, NB, T)

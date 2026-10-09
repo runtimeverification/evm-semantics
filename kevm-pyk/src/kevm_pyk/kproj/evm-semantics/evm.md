@@ -470,6 +470,9 @@ The `interimStates` cell stores a list of previous world states.
          requires POST =/=Int PRE  [preserves-definedness]
     rule #balAppendStorage(SC, _, _, _, POST, PRE) => SC requires POST ==Int PRE
 
+    // shortcut: O(n²) insertion sort over the address universe and each account's slots. Fixtures are
+    // small, but EIP-7928 bounds a block at ~block_gas_limit/2000 items; switch to a merge sort if a
+    // block that large is ever exercised.
     syntax List ::= #balSortInts   ( List )       [function]
                   | #balInsertInt  ( List , Int ) [function]
  // --------------------------------------------------------
@@ -2156,6 +2159,9 @@ These rules reach into the network state and load/store from account storage:
       requires Ghasstategas << SCHED >>
       [preserves-definedness]
 
+    // No EIP-7928 journaling here: every schedule with Ghaseip7928 also has Ghasstategas, so the BAL
+    // storage read/capture lives only in [sstore.stategas]. A schedule with Ghaseip7928 but not
+    // Ghasstategas must add it here, or its storage changes silently drop out of the BAL.
     rule [sstore]:
          <k> SSTORE INDEX NEW => .K ... </k>
          <schedule> SCHED </schedule>
