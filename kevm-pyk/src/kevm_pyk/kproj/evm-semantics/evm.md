@@ -2409,8 +2409,6 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule <k> #accessAccounts ADDRSET:Set => .K ... </k>
          <accessedAccounts> TOUCHED_ACCOUNTS => TOUCHED_ACCOUNTS |Set ADDRSET </accessedAccounts>
 
-    rule <k> #halt ~> (#accessAccounts _:Account => .K) ... </k>
-
     syntax Bytes ::= #computeValidJumpDests(Bytes)                  [symbol(computeValidJumpDests),    function, memo, total]
                    | #computeValidJumpDests(Bytes, Int, Bytes, Int) [symbol(computeValidJumpDestsAux), function             ]
  // -------------------------------------------------------------------------------------------------------------------------
