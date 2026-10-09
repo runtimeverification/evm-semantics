@@ -323,52 +323,48 @@ The `interimStates` cell stores a list of previous world states.
     syntax BalEntry     ::= balE  ( Int , Int )   [symbol(balE)]
     syntax BalCodeEntry ::= balCE ( Int , Bytes ) [symbol(balCE)]
 
-    syntax InternalOp ::= "#balTouch" Account
- // -----------------------------------------
-    rule <k> #balTouch ACCT:Int => .K ... </k>
-         <schedule> SCHED </schedule>
-         <balTouched> TOUCHED => TOUCHED |Set SetItem(ACCT) </balTouched>
-         requires Ghaseip7928 << SCHED >>
-    rule <k> #balTouch _ => .K ... </k> [owise]
+    // Folded into the rules that already fire (#accessAccounts on one address, #systemCall) so
+    // that schedules without EIP-7928 pay no extra rewrite step.
+    syntax Set ::= #balAddTouch ( Schedule , Set , Account ) [symbol(#balAddTouch), function, total]
+ // ----------------------------------------------------------------------------------------------
+    rule #balAddTouch(SCHED, TOUCHED, ACCT:Int) => TOUCHED |Set SetItem(ACCT) requires Ghaseip7928 << SCHED >>
+    rule #balAddTouch(_, TOUCHED, _) => TOUCHED [owise]
 
-    syntax InternalOp ::= "#balRead" Int Int
- // ----------------------------------------
-    rule <k> #balRead ACCT SLOT => .K ... </k>
-         <schedule> SCHED </schedule>
-         <balReads> R => R [ ACCT <- ({R[ACCT] orDefault .Set}:>Set |Set SetItem(SLOT)) ] </balReads>
-         requires Ghaseip7928 << SCHED >>
-         [preserves-definedness]
-    rule <k> #balRead _ _ => .K ... </k> [owise]
+    // Reads and first-write captures are total functions so the hot rules (SLOAD, SSTORE,
+    // #transferFunds) update the BAL cells in place; off EIP-7928 they are the identity.
+    syntax Map ::= #balAddRead     ( Schedule , Map , Int , Int )       [symbol(#balAddRead), function, total]
+                 | #balCapture     ( Schedule , Map , Int , KItem )     [symbol(#balCapture), function, total]
+                 | #balCaptureSlot ( Schedule , Map , Int , Int , Int ) [symbol(#balCaptureSlot), function, total]
+ // ------------------------------------------------------------------------------------------------------------
+    rule #balAddRead(SCHED, R, ACCT, SLOT) => R [ ACCT <- ({R[ACCT] orDefault .Set}:>Set |Set SetItem(SLOT)) ]
+      requires Ghaseip7928 << SCHED >>
+      [preserves-definedness]
+    rule #balAddRead(_, R, _, _) => R [owise]
+
+    rule #balCapture(SCHED, CAP, ACCT, PRE) => CAP [ ACCT <- PRE ]
+      requires Ghaseip7928 << SCHED >> andBool notBool ACCT in_keys(CAP)
+    rule #balCapture(_, CAP, _, _) => CAP [owise]
+
+    rule #balCaptureSlot(SCHED, CAP, ACCT, SLOT, PRE) => CAP [ ACCT <- ({CAP[ACCT] orDefault .Map}:>Map [ SLOT <- PRE ]) ]
+      requires Ghaseip7928 << SCHED >> andBool notBool ( ACCT in_keys(CAP) andBool SLOT in_keys({CAP[ACCT] orDefault .Map}:>Map) )
+      [preserves-definedness]
+    rule #balCaptureSlot(_, CAP, _, _, _) => CAP [owise]
 
     syntax InternalOp ::= "#balCaptureBalance" Int Int
                         | "#balCaptureNonce"   Int Int
                         | "#balCaptureCode"    Int Bytes
-                        | "#balCaptureStorage" Int Int Int
  // ------------------------------------------------------
     rule <k> #balCaptureBalance ACCT PRE => .K ... </k>
          <schedule> SCHED </schedule>
-         <balBalCaptures> CAP => CAP [ ACCT <- PRE ] </balBalCaptures>
-         requires Ghaseip7928 << SCHED >> andBool notBool ACCT in_keys(CAP)
-    rule <k> #balCaptureBalance _ _ => .K ... </k> [owise]
+         <balBalCaptures> CAP => #balCapture(SCHED, CAP, ACCT, PRE) </balBalCaptures>
 
     rule <k> #balCaptureNonce ACCT PRE => .K ... </k>
          <schedule> SCHED </schedule>
-         <balNonceCaptures> CAP => CAP [ ACCT <- PRE ] </balNonceCaptures>
-         requires Ghaseip7928 << SCHED >> andBool notBool ACCT in_keys(CAP)
-    rule <k> #balCaptureNonce _ _ => .K ... </k> [owise]
+         <balNonceCaptures> CAP => #balCapture(SCHED, CAP, ACCT, PRE) </balNonceCaptures>
 
     rule <k> #balCaptureCode ACCT PRE => .K ... </k>
          <schedule> SCHED </schedule>
-         <balCodeCaptures> CAP => CAP [ ACCT <- PRE ] </balCodeCaptures>
-         requires Ghaseip7928 << SCHED >> andBool notBool ACCT in_keys(CAP)
-    rule <k> #balCaptureCode _ _ => .K ... </k> [owise]
-
-    rule <k> #balCaptureStorage ACCT SLOT PRE => .K ... </k>
-         <schedule> SCHED </schedule>
-         <balStorCaptures> CAP => CAP [ ACCT <- ({CAP[ACCT] orDefault .Map}:>Map [ SLOT <- PRE ]) ] </balStorCaptures>
-         requires Ghaseip7928 << SCHED >> andBool notBool ( ACCT in_keys(CAP) andBool SLOT in_keys({CAP[ACCT] orDefault .Map}:>Map) )
-         [preserves-definedness]
-    rule <k> #balCaptureStorage _ _ _ => .K ... </k> [owise]
+         <balCodeCaptures> CAP => #balCapture(SCHED, CAP, ACCT, PRE) </balCodeCaptures>
 
     syntax InternalOp ::= "#balIncorporate"
  // ---------------------------------------
@@ -385,52 +381,47 @@ The `interimStates` cell stores a list of previous world states.
          <balCodeCaptures>  _ => .Map </balCodeCaptures>
          <balStorCaptures>  _ => .Map </balStorCaptures>
 
-    syntax InternalOp ::= "#balIncBal" | "#balIncBalEntry" Int Int
- // --------------------------------------------------------------
+    // Each #balInc<Field> drains its capture map: an entry for a still-existing account records the
+    // post-transaction value, an entry for an account that no longer exists records the field's zero.
+    syntax InternalOp ::= "#balIncBal" | "#balIncNonce" | "#balIncCode"
+ // -------------------------------------------------------------------
     rule <k> #balIncBal => .K ... </k> <balBalCaptures> .Map </balBalCaptures>
-    rule <k> #balIncBal => #balIncBalEntry ACCT PRE ~> #balIncBal ... </k>
-         <balBalCaptures> ACCT:Int |-> PRE REST => REST </balBalCaptures>
-
-    rule <k> #balIncBalEntry ACCT PRE => .K ... </k>
+    rule <k> #balIncBal ... </k>
+         <balBalCaptures> ACCT:Int |-> PRE:Int REST => REST </balBalCaptures>
          <balIndex> IDX </balIndex>
          <account> <acctID> ACCT </acctID> <balance> POST </balance> ... </account>
          <balTouched> T => T |Set SetItem(ACCT) </balTouched>
          <balBalanceChanges> BC => #balAppendE(BC, ACCT, IDX, POST, PRE) </balBalanceChanges>
-    rule <k> #balIncBalEntry ACCT PRE => .K ... </k>
+    rule <k> #balIncBal ... </k>
+         <balBalCaptures> ACCT:Int |-> PRE:Int REST => REST </balBalCaptures>
          <balIndex> IDX </balIndex>
          <balTouched> T => T |Set SetItem(ACCT) </balTouched>
          <balBalanceChanges> BC => #balAppendE(BC, ACCT, IDX, 0, PRE) </balBalanceChanges>
          [owise]
 
-    syntax InternalOp ::= "#balIncNonce" | "#balIncNonceEntry" Int Int
- // ------------------------------------------------------------------
     rule <k> #balIncNonce => .K ... </k> <balNonceCaptures> .Map </balNonceCaptures>
-    rule <k> #balIncNonce => #balIncNonceEntry ACCT PRE ~> #balIncNonce ... </k>
-         <balNonceCaptures> ACCT:Int |-> PRE REST => REST </balNonceCaptures>
-
-    rule <k> #balIncNonceEntry ACCT PRE => .K ... </k>
+    rule <k> #balIncNonce ... </k>
+         <balNonceCaptures> ACCT:Int |-> PRE:Int REST => REST </balNonceCaptures>
          <balIndex> IDX </balIndex>
          <account> <acctID> ACCT </acctID> <nonce> POST </nonce> ... </account>
          <balTouched> T => T |Set SetItem(ACCT) </balTouched>
          <balNonceChanges> NC => #balAppendE(NC, ACCT, IDX, POST, PRE) </balNonceChanges>
-    rule <k> #balIncNonceEntry ACCT PRE => .K ... </k>
+    rule <k> #balIncNonce ... </k>
+         <balNonceCaptures> ACCT:Int |-> PRE:Int REST => REST </balNonceCaptures>
          <balIndex> IDX </balIndex>
          <balTouched> T => T |Set SetItem(ACCT) </balTouched>
          <balNonceChanges> NC => #balAppendE(NC, ACCT, IDX, 0, PRE) </balNonceChanges>
          [owise]
 
-    syntax InternalOp ::= "#balIncCode" | "#balIncCodeEntry" Int Bytes
- // ------------------------------------------------------------------
     rule <k> #balIncCode => .K ... </k> <balCodeCaptures> .Map </balCodeCaptures>
-    rule <k> #balIncCode => #balIncCodeEntry ACCT PRE ~> #balIncCode ... </k>
-         <balCodeCaptures> ACCT:Int |-> PRE REST => REST </balCodeCaptures>
-
-    rule <k> #balIncCodeEntry ACCT PRE => .K ... </k>
+    rule <k> #balIncCode ... </k>
+         <balCodeCaptures> ACCT:Int |-> PRE:Bytes REST => REST </balCodeCaptures>
          <balIndex> IDX </balIndex>
          <account> <acctID> ACCT </acctID> <code> POST:Bytes </code> ... </account>
          <balTouched> T => T |Set SetItem(ACCT) </balTouched>
          <balCodeChanges> CC => #balAppendCE(CC, ACCT, IDX, POST, PRE) </balCodeChanges>
-    rule <k> #balIncCodeEntry ACCT PRE => .K ... </k>
+    rule <k> #balIncCode ... </k>
+         <balCodeCaptures> ACCT:Int |-> PRE:Bytes REST => REST </balCodeCaptures>
          <balIndex> IDX </balIndex>
          <balTouched> T => T |Set SetItem(ACCT) </balTouched>
          <balCodeChanges> CC => #balAppendCE(CC, ACCT, IDX, .Bytes, PRE) </balCodeChanges>
@@ -1631,7 +1622,8 @@ These are just used by the other operators for shuffling local execution state a
       requires ACCTFROM ==K ACCTTO
        andBool VALUE <=Int ORIGFROM
 
-    rule <k> #transferFunds ACCTFROM ACCTTO VALUE => #balCaptureBalance ACCTFROM ORIGFROM ~> #balCaptureBalance ACCTTO ORIGTO ... </k>
+    rule <k> #transferFunds ACCTFROM ACCTTO VALUE => .K ... </k>
+         <balBalCaptures> CAP => #balCapture(SCHED, #balCapture(SCHED, CAP, ACCTFROM, ORIGFROM), ACCTTO, ORIGTO) </balBalCaptures>
          <account>
            <acctID> ACCTFROM </acctID>
            <balance> ORIGFROM => ORIGFROM -Word VALUE </balance>
@@ -2071,31 +2063,31 @@ Operators that require access to the rest of the Ethereum network world-state ca
     syntax UnStackOp ::= "BALANCE"
  // ------------------------------
     rule [balance.true]:
-         <k> BALANCE ACCT => #balTouch ACCT ~> #accessAccounts ACCT ~> BAL ~> #push ... </k>
+         <k> BALANCE ACCT => #accessAccounts ACCT ~> BAL ~> #push ... </k>
          <account>
            <acctID> ACCT </acctID>
            <balance> BAL </balance>
            ...
          </account>
 
-    rule [balance.false]: <k> BALANCE ACCT => #balTouch ACCT ~> #accessAccounts ACCT ~> 0 ~> #push ... </k> [owise]
+    rule [balance.false]: <k> BALANCE ACCT => #accessAccounts ACCT ~> 0 ~> #push ... </k> [owise]
 
     syntax UnStackOp ::= "EXTCODESIZE"
  // ----------------------------------
     rule [extcodesize.true]:
-         <k> EXTCODESIZE ACCT => #balTouch ACCT ~> #accessAccounts ACCT ~> lengthBytes(CODE) ~> #push ... </k>
+         <k> EXTCODESIZE ACCT => #accessAccounts ACCT ~> lengthBytes(CODE) ~> #push ... </k>
          <account>
            <acctID> ACCT </acctID>
            <code> CODE </code>
            ...
          </account>
 
-    rule [extcodesize.false]: <k> EXTCODESIZE ACCT => #balTouch ACCT ~> #accessAccounts ACCT ~> 0 ~> #push ... </k> [owise]
+    rule [extcodesize.false]: <k> EXTCODESIZE ACCT => #accessAccounts ACCT ~> 0 ~> #push ... </k> [owise]
 
     syntax UnStackOp ::= "EXTCODEHASH"
  // ----------------------------------
     rule [extcodehash.true]:
-         <k> EXTCODEHASH ACCT => #balTouch ACCT ~> #accessAccounts ACCT ~> keccak(CODE) ~> #push ... </k>
+         <k> EXTCODEHASH ACCT => #accessAccounts ACCT ~> keccak(CODE) ~> #push ... </k>
          <account>
            <acctID> ACCT </acctID>
            <code> CODE:Bytes </code>
@@ -2105,12 +2097,12 @@ Operators that require access to the rest of the Ethereum network world-state ca
          </account>
       requires notBool #accountEmpty(CODE, NONCE, BAL)
 
-    rule [extcodehash.false]: <k> EXTCODEHASH ACCT => #balTouch ACCT ~> #accessAccounts ACCT ~> 0 ~> #push ... </k> [owise]
+    rule [extcodehash.false]: <k> EXTCODEHASH ACCT => #accessAccounts ACCT ~> 0 ~> #push ... </k> [owise]
 
     syntax QuadStackOp ::= "EXTCODECOPY"
  // ------------------------------------
     rule [extcodecopy.true]:
-         <k> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => #balTouch ACCT ~> #accessAccounts ACCT ... </k>
+         <k> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => #accessAccounts ACCT ... </k>
          <localMem> LM => LM [ MEMSTART := #range(PGM, PGMSTART, WIDTH) ] </localMem>
          <account>
            <acctID> ACCT </acctID>
@@ -2119,7 +2111,7 @@ Operators that require access to the rest of the Ethereum network world-state ca
          </account>
 
     rule [extcodecopy.false]:
-         <k> EXTCODECOPY ACCT MEMSTART _ WIDTH => #balTouch ACCT ~> #accessAccounts ACCT ... </k>
+         <k> EXTCODECOPY ACCT MEMSTART _ WIDTH => #accessAccounts ACCT ... </k>
          <localMem> LM => LM [ MEMSTART := #padToWidth(WIDTH, .Bytes) ] </localMem> [owise]
 ```
 
@@ -2131,7 +2123,9 @@ These rules reach into the network state and load/store from account storage:
     syntax UnStackOp ::= "SLOAD"
  // ----------------------------
     rule [sload]:
-         <k> SLOAD INDEX => #balRead ACCT INDEX ~> #lookup(STORAGE, INDEX) ~> #push ... </k>
+         <k> SLOAD INDEX => #lookup(STORAGE, INDEX) ~> #push ... </k>
+         <schedule> SCHED </schedule>
+         <balReads> R => #balAddRead(SCHED, R, ACCT, INDEX) </balReads>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
@@ -2143,12 +2137,13 @@ These rules reach into the network state and load/store from account storage:
  // ------------------------------
     rule [sstore.stategas]:
          <k> SSTORE INDEX NEW
-          => #balCaptureStorage ACCT INDEX #lookup(STORAGE, INDEX) ~> #balRead ACCT INDEX
-          ~> SstoreStateCredit(SCHED, NEW, #lookup(STORAGE, INDEX), #lookup(ORIGSTORAGE, INDEX)) ~> #creditStateGas
+          => SstoreStateCredit(SCHED, NEW, #lookup(STORAGE, INDEX), #lookup(ORIGSTORAGE, INDEX)) ~> #creditStateGas
           ~> SstoreStateGas(SCHED, NEW, #lookup(STORAGE, INDEX), #lookup(ORIGSTORAGE, INDEX)) ~> #chargeStateGas
          ...
          </k>
          <schedule> SCHED </schedule>
+         <balReads> R => #balAddRead(SCHED, R, ACCT, INDEX) </balReads>
+         <balStorCaptures> CAP => #balCaptureSlot(SCHED, CAP, ACCT, INDEX, #lookup(STORAGE, INDEX)) </balStorCaptures>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
@@ -2270,8 +2265,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule [call.delegatedAuthority]:
          <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
           => #let DELEGATED_ACCOUNT = #asAccount(#range(CODE,3,20)) #in
-           (#balTouch DELEGATED_ACCOUNT
-          ~> #accessAccounts DELEGATED_ACCOUNT
+           (#accessAccounts DELEGATED_ACCOUNT
           ~> #callWithCode ACCTFROM ACCTTO ACCTCODE #getAccountCode(DELEGATED_ACCOUNT) VALUE APPVALUE ARGS STATIC )
           ...
          </k>
@@ -2408,6 +2402,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule <k> #accessAccounts ADDR1:Account ADDR2:Account => #accessAccounts ADDR1 ~> #accessAccounts ADDR2 ... </k>
 
     rule <k> #accessAccounts ADDR:Account => .K ... </k>
+         <schedule> SCHED </schedule>
+         <balTouched> T => #balAddTouch(SCHED, T, ADDR) </balTouched>
          <accessedAccounts> TOUCHED_ACCOUNTS => TOUCHED_ACCOUNTS |Set SetItem(ADDR) </accessedAccounts>
 
     rule <k> #halt ~> (#accessAccounts _:Account => .K) ... </k>
@@ -2461,7 +2457,9 @@ System Transaction Configuration
     syntax InternalOp ::= "#systemCall" Int Bytes   [symbol(#systemCall)]
                         | "#mkSystemCall" Int Bytes [symbol(#mkSystemCall)]
  // -----------------------------------------------------------------------
-    rule <k> #systemCall ACCTTO ARGS => #balTouch ACCTTO ~> #pushCallStack ~> #pushWorldState ~> #mkSystemCall ACCTTO ARGS ... </k>
+    rule <k> #systemCall ACCTTO ARGS => #pushCallStack ~> #pushWorldState ~> #mkSystemCall ACCTTO ARGS ... </k>
+         <schedule> SCHED </schedule>
+         <balTouched> T => #balAddTouch(SCHED, T, ACCTTO) </balTouched>
       requires lengthBytes(#getAccountCode(ACCTTO)) >Int 0
 
     rule <k> #systemCall ACCTTO _ => #abortSystemRequests ... </k>
@@ -2627,8 +2625,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // ------------------------
     rule [call]:
          <k> CALL _GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-          => #balTouch ACCTTO
-          ~> #accessAccounts ACCTTO
+          => #accessAccounts ACCTTO
           ~> #checkCall ACCTFROM VALUE
           ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
@@ -2641,8 +2638,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // ----------------------------
     rule [callcode]:
          <k> CALLCODE _GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-          => #balTouch ACCTTO
-          ~> #accessAccounts ACCTTO
+          => #accessAccounts ACCTTO
           ~> #checkCall ACCTFROM VALUE
           ~> #call ACCTFROM ACCTFROM ACCTTO VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
@@ -2655,8 +2651,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // -----------------------------------
     rule [delegatecall]:
          <k> DELEGATECALL _GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
-          => #balTouch ACCTTO
-          ~> #accessAccounts ACCTTO
+          => #accessAccounts ACCTTO
           ~> #checkCall ACCTFROM 0
           ~> #call ACCTAPPFROM ACCTFROM ACCTTO 0 VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
@@ -2671,8 +2666,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // ---------------------------------
     rule [staticcall]:
          <k> STATICCALL _GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
-          => #balTouch ACCTTO
-          ~> #accessAccounts ACCTTO
+          => #accessAccounts ACCTTO
           ~> #checkCall ACCTFROM 0
           ~> #call ACCTFROM ACCTTO ACCTTO 0 0 #range(LM, ARGSTART, ARGWIDTH) true
           ~> #return RETSTART RETWIDTH
@@ -2828,7 +2822,6 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     rule [create-valid]:
          <k> CREATE VALUE MEMSTART MEMWIDTH
           => #checkCreate ACCT VALUE
-          ~> #balTouch #newAddr(ACCT, NONCE)
           ~> #accessAccounts #newAddr(ACCT, NONCE)
           ~> #chargeCreateStateGas #newAddr(ACCT, NONCE) CD
           ~> #create ACCT #newAddr(ACCT, NONCE) VALUE #range(LM, MEMSTART, MEMWIDTH)
@@ -2859,7 +2852,6 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     rule [create2-valid]:
          <k> CREATE2 VALUE MEMSTART MEMWIDTH SALT
           => #checkCreate ACCT VALUE
-          ~> #balTouch #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
           ~> #accessAccounts #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
           ~> #chargeCreateStateGas #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)) CD
           ~> #create ACCT #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)) VALUE #range(LM, MEMSTART, MEMWIDTH)
@@ -2882,7 +2874,7 @@ Pre-Amsterdam, self destructing to yourself, unlike a regular transfer, destroys
 ```k
     syntax UnStackOp ::= "SELFDESTRUCT"
  // -----------------------------------
-    rule <k> SELFDESTRUCT ACCTTO => #balTouch ACCTTO ~> #touchAccounts ACCT ACCTTO ~> #accessAccounts ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
+    rule <k> SELFDESTRUCT ACCTTO => #touchAccounts ACCT ACCTTO ~> #accessAccounts ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
          <schedule> SCHED </schedule>
          <id> ACCT </id>
          <selfDestruct> SDS => SDS |Set SetItem(ACCT) </selfDestruct>
@@ -2919,7 +2911,7 @@ Pre-Amsterdam, self destructing to yourself, unlike a regular transfer, destroys
       requires ((notBool Ghaseip6780 << SCHED >>) orBool ACCT in CA)
        andBool Ghasnoselfdestructburn << SCHED >>
 
-    rule <k> SELFDESTRUCT ACCTTO => #balTouch ACCTTO ~> #touchAccounts ACCT ACCTTO ~> #accessAccounts ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
+    rule <k> SELFDESTRUCT ACCTTO => #touchAccounts ACCT ACCTTO ~> #accessAccounts ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
          <schedule> SCHED </schedule>
          <id> ACCT </id>
          <account>

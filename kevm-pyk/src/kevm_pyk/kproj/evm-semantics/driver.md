@@ -129,7 +129,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
       requires notBool #accountExists(ACCTFROM)
 
     rule <k> loadTx(ACCTFROM)
-          => #balTouch ACCTFROM ~> #balTouch #newAddr(ACCTFROM, NONCE) ~> #balCaptureBalance ACCTFROM BAL
+          => #balCaptureBalance ACCTFROM BAL
           ~> #accessAccounts ACCTFROM #newAddr(ACCTFROM, NONCE) #precompiledAccountsSet(SCHED)
           ~> #deductBlobGas
           ~> #loadAccessList(TA)
@@ -174,7 +174,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
        andBool #isValidIntrinsicGasCap(SCHED, #G0Full(SCHED, CODE, true, false, VALUE, size(AUTH)) +Int #accessListRegularCost(SCHED, TA), Ctxfloor(SCHED, CODE, true, false, VALUE, #accessListFloorTokens(TA)))
 
     rule <k> loadTx(ACCTFROM)
-          => #balTouch ACCTFROM ~> #balTouch ACCTTO ~> #balCaptureBalance ACCTFROM BAL ~> #balCaptureNonce ACCTFROM NONCE
+          => #balCaptureBalance ACCTFROM BAL ~> #balCaptureNonce ACCTFROM NONCE
           ~> #accessAccounts ACCTFROM ACCTTO #precompiledAccountsSet(SCHED)
           ~> #deductBlobGas
           ~> #loadAccessList(TA)
@@ -300,7 +300,7 @@ It is an `EthereumCommand` rather than an `InternalOp` because `InternalOp` is a
          <callGas> GLIMIT => GLIMIT -Int Gaccessliststoragekey < SCHED >
                              -Int #if Ghasintrinsicdecomp << SCHED >> #then 128 *Int Gtxdatafloor < SCHED > #else 0 #fi </callGas>
 
-    rule <k> #loadAccessListAux (ACCT, .List) => #accessAccounts ACCT ... </k>
+    rule <k> #loadAccessListAux (ACCT, .List) => #accessAccounts SetItem(ACCT) ... </k>
          <schedule> SCHED </schedule>
          <callGas> GLIMIT => GLIMIT -Int Gaccesslistaddress < SCHED >
                              -Int #if Ghasintrinsicdecomp << SCHED >> #then 80 *Int Gtxdatafloor < SCHED > #else 0 #fi </callGas>
@@ -391,7 +391,7 @@ Processing SetCode Transaction Authority Entries
     // the tuple: EELS validate_authorization reads the authority account (a tracked access) right
     // after recovering it, before those checks. EIP-7928's prose ("after a successful set") is looser.
     rule <k> #setDelegation(AUTHORITY, CID, NONCE, ADDR, REST, W, NB, T)
-          => #balTouch AUTHORITY ~> #touchAccounts AUTHORITY ~> #accessAccounts AUTHORITY
+          => #touchAccounts AUTHORITY ~> #accessAccounts AUTHORITY
            ~> #addAuthority(AUTHORITY, CID, NONCE, ADDR, REST, W, NB, T)
           ...
          </k> [owise]
