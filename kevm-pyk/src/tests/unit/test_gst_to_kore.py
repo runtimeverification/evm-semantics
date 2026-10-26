@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 import pytest
 from pyk.kore.parser import KoreParser
 
+from kevm_pyk.gst_to_kore import ScheduleTriple, resolve_network
 from kevm_pyk.interpreter import iterate_gst
 
 from ..utils import REPO_ROOT
@@ -54,3 +55,24 @@ def test_gst_to_kore(gst_path: str, expected_path: str, update_expected_output: 
     for actual, expected_line in zip(actuals, expected_lines, strict=True):
         expected = KoreParser(expected_line).pattern()
         assert actual == expected
+
+
+RESOLVE_NETWORK_DATA: Final = (
+    ('Cancun', ScheduleTriple('CANCUN', 'CANCUN', 0)),
+    ('AmsterdamBPOIncrease', ScheduleTriple('AMSTERDAM_BPO_INCREASE', 'AMSTERDAM_BPO_INCREASE', 0)),
+    ('PragueToOsakaAtTime15k', ScheduleTriple('PRAGUE', 'OSAKA', 15000)),
+    ('BPO2ToAmsterdamAtTime15k', ScheduleTriple('BPO2', 'AMSTERDAM', 15000)),
+    ('AmsterdamToBPOIncreaseAtTime15k', ScheduleTriple('AMSTERDAM', 'AMSTERDAM_BPO_INCREASE', 15000)),
+    ('AmsterdamToBPODecreaseAtTime15k', ScheduleTriple('AMSTERDAM', 'AMSTERDAM_BPO_DECREASE', 15000)),
+)
+
+
+@pytest.mark.parametrize('network,expected', RESOLVE_NETWORK_DATA, ids=[network for network, _ in RESOLVE_NETWORK_DATA])
+def test_resolve_network(network: str, expected: ScheduleTriple) -> None:
+    assert resolve_network(network) == expected
+
+
+@pytest.mark.parametrize('network', ('Unknown', 'BPO2ToBPO3AtTime15k', 'UnknownToOsakaAtTime15k'))
+def test_resolve_network_unknown(network: str) -> None:
+    with pytest.raises(ValueError, match='Unknown network'):
+        resolve_network(network)

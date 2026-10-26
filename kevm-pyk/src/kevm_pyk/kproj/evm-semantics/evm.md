@@ -2983,9 +2983,9 @@ Precompiled Contracts
     rule #precompiledAccountsUB(OSAKA)             => #precompiledAccountsUB(PRAGUE)
     rule #precompiledAccountsUB(BPO1)              => #precompiledAccountsUB(OSAKA)
     rule #precompiledAccountsUB(BPO2)              => #precompiledAccountsUB(BPO1)
-    rule #precompiledAccountsUB(BPO3)              => #precompiledAccountsUB(BPO2)
-    rule #precompiledAccountsUB(BPO4)              => #precompiledAccountsUB(BPO3)
     rule #precompiledAccountsUB(AMSTERDAM)         => #precompiledAccountsUB(OSAKA)
+    rule #precompiledAccountsUB(AMSTERDAM_BPO_INCREASE) => #precompiledAccountsUB(AMSTERDAM)
+    rule #precompiledAccountsUB(AMSTERDAM_BPO_DECREASE) => #precompiledAccountsUB(AMSTERDAM)
 
 
     syntax Set ::= #precompiledAccountsSet    ( Schedule ) [symbol(#precompiledAccountsSet),    function, total]

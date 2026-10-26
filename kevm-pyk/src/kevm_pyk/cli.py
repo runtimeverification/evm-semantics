@@ -1010,9 +1010,9 @@ class KEVMCLIArgs(KCLIArgs):
             'OSAKA',
             'BPO1',
             'BPO2',
-            'BPO3',
-            'BPO4',
             'AMSTERDAM',
+            'AMSTERDAM_BPO_INCREASE',
+            'AMSTERDAM_BPO_DECREASE',
         )
         modes = ('NORMAL', 'VMTESTS')
 

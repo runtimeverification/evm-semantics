@@ -580,8 +580,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 
 ### BPO Schedules
 
-The BPO forks ([EIP-7892](https://eips.ethereum.org/EIPS/eip-7892)) sit between Osaka and Amsterdam on the glamsterdam devnets and change only the blob-schedule parameters.
-The values are the `update_blob_constants` of the EEST fork classes at the fixture pin (`packages/testing/src/execution_testing/forks/forks/forks.py` in ethereum/execution-specs; the interpreter forks' `vm/gas.py` constants lag them for the testing-only BPO3/BPO4).
+The BPO forks ([EIP-7892](https://eips.ethereum.org/EIPS/eip-7892)) sit between Osaka and Amsterdam and change only the blob-schedule parameters.
+The values are the `update_blob_constants` of the EEST fork classes at the fixture pin (`packages/testing/src/execution_testing/forks/forks/forks.py` in ethereum/execution-specs).
 
 ```k
     syntax Schedule ::= "BPO1" [symbol(BPO1_EVM), smtlib(schedule_BPO1)]
@@ -607,30 +607,6 @@ The values are the `update_blob_constants` of the EEST fork classes at the fixtu
                   orBool SCHEDCONST ==K Blobbasefeeupdatefraction )
 
     rule [SCHEDFLAGBpo2]: SCHEDFLAG << BPO2 >> => SCHEDFLAG << BPO1 >>
-
-    syntax Schedule ::= "BPO3" [symbol(BPO3_EVM), smtlib(schedule_BPO3)]
- // --------------------------------------------------------------------
-    rule [GmaxblobgasBpo3]:               Gmaxblobgas               < BPO3 > => 4194304
-    rule [GtargetblobgasBpo3]:            Gtargetblobgas            < BPO3 > => 2752512
-    rule [BlobbasefeeupdatefractionBpo3]: Blobbasefeeupdatefraction < BPO3 > => 20609697
-    rule [SCHEDCONSTBpo3]:                SCHEDCONST                < BPO3 > => SCHEDCONST < BPO2 >
-      requires notBool ( SCHEDCONST ==K Gmaxblobgas
-                  orBool SCHEDCONST ==K Gtargetblobgas
-                  orBool SCHEDCONST ==K Blobbasefeeupdatefraction )
-
-    rule [SCHEDFLAGBpo3]: SCHEDFLAG << BPO3 >> => SCHEDFLAG << BPO2 >>
-
-    syntax Schedule ::= "BPO4" [symbol(BPO4_EVM), smtlib(schedule_BPO4)]
- // --------------------------------------------------------------------
-    rule [GmaxblobgasBpo4]:               Gmaxblobgas               < BPO4 > => 2752512
-    rule [GtargetblobgasBpo4]:            Gtargetblobgas            < BPO4 > => 1835008
-    rule [BlobbasefeeupdatefractionBpo4]: Blobbasefeeupdatefraction < BPO4 > => 13739630
-    rule [SCHEDCONSTBpo4]:                SCHEDCONST                < BPO4 > => SCHEDCONST < BPO3 >
-      requires notBool ( SCHEDCONST ==K Gmaxblobgas
-                  orBool SCHEDCONST ==K Gtargetblobgas
-                  orBool SCHEDCONST ==K Blobbasefeeupdatefraction )
-
-    rule [SCHEDFLAGBpo4]: SCHEDFLAG << BPO4 >> => SCHEDFLAG << BPO3 >>
 ```
 
 ### Amsterdam Schedule
@@ -709,6 +685,36 @@ The values are the `update_blob_constants` of the EEST fork classes at the fixtu
                   orBool SCHEDFLAG ==K Ghasnoselfdestructburn
                   orBool SCHEDFLAG ==K Ghasbuilderrequests
                        )
+```
+
+### Amsterdam BPO test schedules
+
+`AmsterdamBPOIncrease` and `AmsterdamBPODecrease` are synthetic EEST test forks (`add_bpo_scenarios` in the fixture pin's `forks.py`): Amsterdam's rules with the blob target scaled by 3/2 and 2/3, the maximum and the base-fee update fraction scaled with it.
+
+```k
+    syntax Schedule ::= "AMSTERDAM_BPO_INCREASE" [symbol(AMSTERDAM_BPO_INCREASE_EVM), smtlib(schedule_AMSTERDAM_BPO_INCREASE)]
+ // ------------------------------------------------------------------------------------------------------------------------
+    rule [GmaxblobgasAmsterdamBpoIncrease]:               Gmaxblobgas               < AMSTERDAM_BPO_INCREASE > => 4194304
+    rule [GtargetblobgasAmsterdamBpoIncrease]:            Gtargetblobgas            < AMSTERDAM_BPO_INCREASE > => 2752512
+    rule [BlobbasefeeupdatefractionAmsterdamBpoIncrease]: Blobbasefeeupdatefraction < AMSTERDAM_BPO_INCREASE > => 17527006
+    rule [SCHEDCONSTAmsterdamBpoIncrease]:                SCHEDCONST                < AMSTERDAM_BPO_INCREASE > => SCHEDCONST < AMSTERDAM >
+      requires notBool ( SCHEDCONST ==K Gmaxblobgas
+                  orBool SCHEDCONST ==K Gtargetblobgas
+                  orBool SCHEDCONST ==K Blobbasefeeupdatefraction )
+
+    rule [SCHEDFLAGAmsterdamBpoIncrease]: SCHEDFLAG << AMSTERDAM_BPO_INCREASE >> => SCHEDFLAG << AMSTERDAM >>
+
+    syntax Schedule ::= "AMSTERDAM_BPO_DECREASE" [symbol(AMSTERDAM_BPO_DECREASE_EVM), smtlib(schedule_AMSTERDAM_BPO_DECREASE)]
+ // ------------------------------------------------------------------------------------------------------------------------
+    rule [GmaxblobgasAmsterdamBpoDecrease]:               Gmaxblobgas               < AMSTERDAM_BPO_DECREASE > => 1835008
+    rule [GtargetblobgasAmsterdamBpoDecrease]:            Gtargetblobgas            < AMSTERDAM_BPO_DECREASE > => 1179648
+    rule [BlobbasefeeupdatefractionAmsterdamBpoDecrease]: Blobbasefeeupdatefraction < AMSTERDAM_BPO_DECREASE > => 7511574
+    rule [SCHEDCONSTAmsterdamBpoDecrease]:                SCHEDCONST                < AMSTERDAM_BPO_DECREASE > => SCHEDCONST < AMSTERDAM >
+      requires notBool ( SCHEDCONST ==K Gmaxblobgas
+                  orBool SCHEDCONST ==K Gtargetblobgas
+                  orBool SCHEDCONST ==K Blobbasefeeupdatefraction )
+
+    rule [SCHEDFLAGAmsterdamBpoDecrease]: SCHEDFLAG << AMSTERDAM_BPO_DECREASE >> => SCHEDFLAG << AMSTERDAM >>
 ```
 
 ```k

@@ -53,8 +53,8 @@ SCHEDULE_MAPPING: Final[dict[str, str]] = {
     'Amsterdam': 'AMSTERDAM',
     'BPO1': 'BPO1',
     'BPO2': 'BPO2',
-    'BPO3': 'BPO3',
-    'BPO4': 'BPO4',
+    'AmsterdamBPOIncrease': 'AMSTERDAM_BPO_INCREASE',
+    'AmsterdamBPODecrease': 'AMSTERDAM_BPO_DECREASE',
 }
 
 
@@ -73,18 +73,20 @@ def resolve_network(network: str) -> ScheduleTriple:
     Plain networks (and transition networks pinned in SCHEDULE_MAPPING) run under a single
     schedule; other `<Pre>To<Post>AtTime<N>k` networks start under the pre-fork schedule and
     switch to the post-fork one for blocks whose timestamp reaches N*1000.
+    A post-fork name that extends the pre-fork one is written without that prefix, as EEST does
+    (`AmsterdamToBPOIncreaseAtTime15k` switches to `AmsterdamBPOIncrease`).
     """
     if network in SCHEDULE_MAPPING:
         schedule = SCHEDULE_MAPPING[network]
         return ScheduleTriple(schedule, schedule, 0)
     match = _TRANSITION_NETWORK.match(network)
-    if match and match['pre'] in SCHEDULE_MAPPING and match['post'] in SCHEDULE_MAPPING:
-        return ScheduleTriple(
-            SCHEDULE_MAPPING[match['pre']],
-            SCHEDULE_MAPPING[match['post']],
-            int(match['kilo']) * 1000,
-        )
-    raise ValueError(f'Unknown network: {network}')
+    if match is None or match['pre'] not in SCHEDULE_MAPPING:
+        raise ValueError(f'Unknown network: {network}')
+    pre, post = match['pre'], match['post']
+    post_fork = post if post in SCHEDULE_MAPPING else pre + post
+    if post_fork not in SCHEDULE_MAPPING:
+        raise ValueError(f'Unknown network: {network}')
+    return ScheduleTriple(SCHEDULE_MAPPING[pre], SCHEDULE_MAPPING[post_fork], int(match['kilo']) * 1000)
 
 
 _GST_DISCARD_KEYS: Final = frozenset(
