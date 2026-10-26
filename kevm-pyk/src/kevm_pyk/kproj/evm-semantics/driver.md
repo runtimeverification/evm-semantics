@@ -226,7 +226,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     rule <k> loadTx(_) => startTx ... </k>
          <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>
-         <txPending> ListItem(_TXID:Int) REST => REST </txPending>
+         <txPending> _ => .List </txPending>
          <txOrder> _ => .List </txOrder> [owise]
 ```
 
@@ -509,6 +509,13 @@ Processing SetCode Transaction Authority Entries
     rule <statusCode> _:ExceptionalStatusCode </statusCode>
          <k> exception ~> check _ => exception ... </k>
 
+    // A rejected block is discarded, as in EELS: its marker is spent and the world state goes back
+    // to the snapshot taken before it (block rewards and pre-block system calls included), so the
+    // blocks after it build on its parent (EEST tx_invalid_first_in_block).
+    rule <statusCode> _:ExceptionalStatusCode </statusCode>
+         <k> exception ~> run { "blocks" : BLOCKS } => #popWorldState ~> run { "blocks" : BLOCKS } ... </k>
+      [priority(40)]
+
     rule <statusCode> _:ExceptionalStatusCode </statusCode>
          <k> exception ~> run TEST => run TEST ~> exception ... </k>
 
@@ -584,7 +591,7 @@ Processing SetCode Transaction Authority Entries
 
     rule <k> exception ~> process { KEY : VAL , REST } => load KEY : VAL ~> exception ~> process { REST }             ... </k> requires KEY in #loadKeys
     rule <k> exception ~> process { KEY : VAL , REST } => exception ~> process { REST } ~> check {KEY : VAL} ... </k> requires KEY in #checkKeys
-    rule <k> exception ~> process { .JSONs }           => #updateSchedule ~> #validateBlockRlpSize ~> #startBlock ~> startTx ~> exception ... </k>
+    rule <k> exception ~> process { .JSONs }           => #pushWorldState ~> #updateSchedule ~> #validateBlockRlpSize ~> #startBlock ~> startTx ~> exception ... </k>
 
     rule <k> process { "rlp_decoded" : { KEY : VAL , REST1 => REST1 }, (REST2 => KEY : VAL , REST2 ) } ... </k>
     rule <k> process { "rlp_decoded" : { .JSONs } , REST => REST}                                      ... </k>
