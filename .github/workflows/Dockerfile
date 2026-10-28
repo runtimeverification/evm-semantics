@@ -27,8 +27,21 @@ RUN    apt-get update                  \
             llvm-${LLVM_VERSION}-dev   \
             llvm-${LLVM_VERSION}-tools \
             maven                      \
+            openjdk-17-jdk-headless    \
             python3                    \
             python3-pip
+
+# The K frontend (k-frontend jar) of the K commit in deps/k_frontend_rev replaces the one of the K
+# release above. Only the Java frontend differs from the release; everything else is unchanged.
+ARG K_FRONTEND_REV
+RUN    curl -fsSL "https://github.com/runtimeverification/k/archive/${K_FRONTEND_REV}.tar.gz" | tar -xz -C /tmp \
+    && cd "/tmp/k-${K_FRONTEND_REV}"                                                                       \
+    && mvn --batch-mode --quiet -f k-frontend/pom.xml package -DskipTests                                \
+    && jars=$(find / -xdev -path '*/kframework/java/k-frontend-1.0-SNAPSHOT.jar' -not -path '/tmp/*')     \
+    && test -n "${jars}"                                                                                  \
+    && for jar in ${jars}; do cp -v k-frontend/target/k-frontend-1.0-SNAPSHOT.jar "${jar}"; done          \
+    && cd /                                                                                               \
+    && rm -rf "/tmp/k-${K_FRONTEND_REV}" /root/.m2
 
 ARG IMAGE_USER=user
 ARG IMAGE_GROUP
