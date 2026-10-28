@@ -33,6 +33,7 @@ runs:
       IMAGE_GROUP=${IMAGE_USER}
       Z3_VERSION=$(cat deps/z3)
       K_VERSION=$(cat deps/k_release)
+      K_FRONTEND_REV=$(cat deps/k_frontend_rev)
       UV_VERSION=$(cat deps/uv_release)
       USER_ID=1000
       GROUP_ID=${USER_ID}
@@ -44,6 +45,7 @@ runs:
         --build-arg IMAGE_USER="${IMAGE_USER}"                  \
         --build-arg IMAGE_GROUP="${IMAGE_GROUP}"                \
         --build-arg K_VERSION="${K_VERSION}"        \
+        --build-arg K_FRONTEND_REV="${K_FRONTEND_REV}" \
         --build-arg Z3_VERSION="${Z3_VERSION}"      \
         --build-arg LLVM_VERSION="${LLVM_VERSION}"  \
         --build-arg UV_VERSION="${UV_VERSION}"
